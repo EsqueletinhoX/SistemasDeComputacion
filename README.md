@@ -1,1 +1,0 @@
-# TP1---Sistemas-de-Computaci-n
