@@ -24,7 +24,7 @@ El sistema está diseñado en tres capas distintas que interactúan entre sí ut
 
 ## Requisitos Previos
 
-Para compilar y ejecutar este proyecto, es necesario contar con un entorno Linux (o WSL) con las siguientes herramientas instaladas:
+Para compilar y ejecutar este proyecto, es necesario contar con las siguientes herramientas instaladas:
 
 * **Python 3** y la librería `requests` (`sudo apt install python3-requests`)
 * **GCC** con soporte multilib (`sudo apt install build-essential gcc-multilib g++-multilib`)
