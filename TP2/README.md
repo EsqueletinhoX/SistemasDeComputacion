@@ -36,7 +36,7 @@ Para compilar y ejecutar este proyecto, es necesario contar con las siguientes h
 
 El desarrollo y prueba de este sistema se dividió en iteraciones para validar cada capa arquitectónica. A continuación, se detalla cómo ejecutar cada parte:
 
-### Iteración 1: Validación de la Capa Superior (API REST)
+### Iteración 1: Validación de la Capa Superior
 Antes de compilar el sistema completo, se puede verificar que la conexión con el Banco Mundial esté operativa ejecutando el script de Python de forma aislada.
 
 1. Ejecutar en la terminal:
@@ -44,6 +44,43 @@ Antes de compilar el sistema completo, se puede verificar que la conexión con e
    python3 api_gini.py
    ```
    
-   Resultado
+   Resultado:
 
    ![Resultado de ejecutar la iteración 1](img/python_manual.png)
+
+### Iteración 2: Integración de Capas (C + Assembler) y Ejecución
+
+En esta etapa, vinculamos la capa intermedia escrita en C con la subrutina de bajo nivel en Assembler. El objetivo es procesar el dato obtenido por Python y realizar la operación aritmética final directamente en el procesador, manipulando el Stack Frame.
+
+#### 1. Compilación del Sistema Completo
+Utilizamos el compilador `gcc` para unir ambos códigos fuente. Agregamos el flag `-g` para incluir información de depuración, lo cual es fundamental para el posterior análisis en GDB.
+
+Ejecutar el siguiente comando en la terminal:
+```bash
+gcc -g -o programa_gini main.c gini_asm.s
+```
+Al ejecutar el binario resultante, el programa realiza la llamada a Python, captura el valor flotante, realiza la conversión de tipos en C y ejecuta la lógica aritmética en Assembler.
+```bash
+./programa_gini
+```
+
+Salida de la terminal:
+
+![Resultado de ejecutar la iteración 1](img/iteracion2.png)
+
+### 2: Depuración y Comprobación del Stack Frame (GDB)
+Para demostrar empíricamente el paso del séptimo argumento a través de la pila (cumpliendo con la convención de llamadas x86-64 en Linux), se inspeccionó el binario compilado con la herramienta GDB.
+
+Comandos ejecutados en el depurador para aislar la función y observar la memoria:
+```bash
+gdb ./programa_gini
+break calcular_gini_asm
+run
+stepi
+stepi
+x/4xg $rsp
+```
+
+Salida de la terminal:
+
+![Resultado de ejecutar la iteración 1](img/iteracion2_2.png)
