@@ -47,10 +47,16 @@ Cada carpeta contiene el detalle de compilación específico de su etapa, pero a
 
 ## Conclusión General
 
-El desarrollo de este trabajo práctico permitió consolidar de forma empírica los conceptos teóricos sobre la arquitectura x86-64 y la interacción directa entre lenguajes de distinto nivel de abstracción. A partir de la implementación dividida en fases, destacamos los siguientes hitos:
+El desarrollo de este trabajo práctico permitió consolidar de forma empírica los conceptos teóricos sobre la arquitectura x86-64 y la interacción directa entre lenguajes de distinto nivel de abstracción. A partir del desarrollo, destacamos los siguientes logros:
 
-* **Interoperabilidad de Lenguajes:** Se logró establecer un puente estable y eficiente mediante la compilación de librerías compartidas (`.so`). Python delegó exitosamente el procesamiento numérico y el formateo a C, demostrando cómo los lenguajes de alto nivel pueden apoyarse en lenguajes nativos para acercarse al hardware sin perder la versatilidad web.
-* **Dominio de la Convención de Llamadas:** La transición hacia la Parte 2 exigió un entendimiento estricto de la *System V AMD64 ABI*. La transferencia de datos de punto flotante (`double`) y la correcta captura de los retornos numéricos entre C y Ensamblador validaron nuestro control sobre la lógica de los registros y los tipos de datos (truncamiento vía `cvttsd2si`).
-* **Transparencia del Stack Frame:** El análisis paso a paso documentado en `Stackframe.md` representa el logro técnico más importante del equipo. Mediante GDB, logramos "desnudar" el comportamiento implícito del procesador: evidenciamos cómo la instrucción `call` empuja la dirección de retorno a la pila, cómo el prólogo salvaguarda el contexto de la función llamadora (`pushq %rbp`), y comprobamos físicamente que los argumentos pasados por memoria residen en *offsets* predecibles.
+* Se logró integrar correctamente Python y C mediante librerías dinámicas (`.so`).
+* Se comprendió y aplicó la convención de llamadas (System V AMD64) para el paso de datos de punto flotante.
+* Se analizó el comportamiento del Stack Frame, los registros y el paso de parámetros en ejecución real usando GDB.
+* Se validó el correcto truncamiento y conversión de tipos de datos a nivel de procesador.
 
-En definitiva, este repositorio trasciende la simple operación aritmética de incrementar un número, convirtiéndose en una demostración comprobable de cómo los datos atraviesan el silicio, la memoria y las capas de software.
+### Punto clave
+
+El verdadero valor de este trabajo no reside en la complejidad de la operación matemática, sino en la demostración práctica de:
+* la integración de lenguajes de distinto nivel de abstracción.
+* el análisis y manipulación de la memoria a bajo nivel.
+* la comprensión absoluta del flujo de ejecución.
