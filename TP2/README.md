@@ -51,6 +51,7 @@ Antes de compilar el sistema completo, se puede verificar que la conexión con e
 ### Iteración 2: Integración de Capas (C + Assembler) y Ejecución
 
 En esta etapa, vinculamos la capa intermedia escrita en C con la subrutina de bajo nivel en Assembler. El objetivo es procesar el dato obtenido por Python y realizar la operación aritmética final directamente en el procesador, manipulando el Stack Frame.
+En la carpeta /Parte_2 se encuentra el archivo Stackframe.md con mas detalles de la ejecucion.
 
 #### 1. Compilación del Sistema Completo
 Utilizamos el compilador `gcc` para unir ambos códigos fuente. Agregamos el flag `-g` para incluir información de depuración, lo cual es fundamental para el posterior análisis en GDB.
@@ -69,21 +70,6 @@ Salida de la terminal:
 ![Resultado de ejecutar la iteración 1](img/iteracion2.png)
 
 ### 2: Depuración y Comprobación del Stack Frame (GDB)
-Para demostrar empíricamente el paso del séptimo argumento a través de la pila (cumpliendo con la convención de llamadas x86-64 en Linux), se inspeccionó el binario compilado con la herramienta GDB.
-
-Comandos ejecutados en el depurador para aislar la función y observar la memoria:
-```bash
-gdb ./programa_gini
-break calcular_gini_asm
-run
-stepi
-stepi
-x/4xg $rsp
-```
-
-Salida de la terminal:
-
-![Resultado de ejecutar la iteración 1](img/iteracion2_2.png)
 
 **Análisis de la memoria capturada:**
 Al inspeccionar los bloques de 8 bytes a partir de la nueva cima de la pila (`%rsp`), se observa la estructura exacta del Stack Frame:
