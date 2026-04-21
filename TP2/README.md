@@ -51,6 +51,7 @@ Antes de compilar el sistema completo, se puede verificar que la conexión con e
 ### Iteración 2: Integración de Capas (C + Assembler) y Ejecución
 
 En esta etapa, vinculamos la capa intermedia escrita en C con la subrutina de bajo nivel en Assembler. El objetivo es procesar el dato obtenido por Python y realizar la operación aritmética final directamente en el procesador, manipulando el Stack Frame.
+En la carpeta /Parte_2 se encuentra el archivo Stackframe.md con mas detalles de la ejecucion.
 
 #### 1. Compilación del Sistema Completo
 Utilizamos el compilador `gcc` para unir ambos códigos fuente. Agregamos el flag `-g` para incluir información de depuración, lo cual es fundamental para el posterior análisis en GDB.
