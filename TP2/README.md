@@ -14,66 +14,43 @@ _Javier A. Jorge; Miguel A. Solinas;_
 
 ## Descripción del Proyecto
 
-El sistema está diseñado en tres capas distintas que interactúan entre sí utilizando las convenciones de llamadas de Linux x86-64:
+Este repositorio contiene la resolución del Trabajo Práctico N° 2, cuyo objetivo es demostrar la integración de tres capas de abstracción en el desarrollo de software (Alto Nivel, Nivel Intermedio y Bajo Nivel) utilizando la obtención y procesamiento del Índice GINI de Argentina como caso de estudio.
 
-1. **Capa Superior (Python):** Se encarga de la comunicación web. Consume la API pública del Banco Mundial para buscar el índice GINI más reciente de Argentina.
-2. **Capa Intermedia (C):** Actúa como *wrapper*. Ejecuta el script de Python, captura el valor de coma flotante, lo convierte a un número entero y prepara el entorno para invocar al hardware.
-3. **Capa Inferior (Ensamblador x86-64):** Recibe el dato entero e incrementa su valor en 1. Para forzar el uso de la memoria (Pila/Stack) y demostrar el manejo del *Stack Frame*, la rutina en C pasa 6 argumentos basura en los registros para que el valor real viaje obligatoriamente como el 7mo argumento a través de la pila.
-
----
-
-## Requisitos Previos
-
-Para compilar y ejecutar este proyecto, es necesario contar con las siguientes herramientas instaladas:
-
-* **Python 3** y la librería `requests` (`sudo apt install python3-requests`)
-* **GCC** con soporte multilib (`sudo apt install build-essential gcc-multilib g++-multilib`)
-* **GDB** para la depuración y análisis de memoria (`sudo apt install gdb`)
+Para evidenciar la evolución técnica del código y facilitar su corrección, el proyecto fue estructurado en dos etapas incrementales:
+* **Parte 1:** Integración inicial entre Python (que actúa consumiendo la API REST) y C (compilado como una librería dinámica `.so`).
+* **Parte 2:** Incorporación de la capa inferior en Ensamblador (x86-64), manipulación manual de memoria y conversión de tipos.
 
 ---
 
-## Compilación y Ejecución Paso a Paso
+## Guía de Lectura del Repositorio
 
-El desarrollo y prueba de este sistema se dividió en iteraciones para validar cada capa arquitectónica. A continuación, se detalla cómo ejecutar cada parte:
+Para comprender la totalidad del flujo de trabajo, recomendamos explorar el repositorio en el siguiente orden:
 
-### Iteración 1: Validación de la Capa Superior
-Antes de compilar el sistema completo, se puede verificar que la conexión con el Banco Mundial esté operativa ejecutando el script de Python de forma aislada.
+1. **`Parte_1/`**: Contiene la implementación base. Revisar su archivo `README.md` para las instrucciones de compilación de la *shared library* y ejecución.
+2. **`Parte_2/`**: Contiene la implementación avanzada uniendo C y ASM. Revisar su archivo `README.md` para el proceso de ensamblado y linkeo.
+3. **`Parte_2/Stackframe.md`**: Documento detallado con la inspección empírica de la memoria utilizando GDB. **Este es el núcleo analítico del trabajo.**
 
-1. Ejecutar en la terminal:
-   ```bash
-   python3 api_gini.py
-   ```
-   
-   Resultado:
+*(Nota: Se recomienda leer la documentación de las carpetas mencionadas antes de pasar a la conclusión general).*
 
-   ![Resultado de ejecutar la iteración 1](img/python_manual.png)
+---
 
-### Iteración 2: Integración de Capas (C + Assembler) y Ejecución
+## Requisitos Previos (Generales)
 
-En esta etapa, vinculamos la capa intermedia escrita en C con la subrutina de bajo nivel en Assembler. El objetivo es procesar el dato obtenido por Python y realizar la operación aritmética final directamente en el procesador, manipulando el Stack Frame.
-En la carpeta /Parte_2 se encuentra el archivo Stackframe.md con mas detalles de la ejecucion.
+Cada carpeta contiene el detalle de compilación específico de su etapa, pero a nivel general el sistema requiere:
 
-#### 1. Compilación del Sistema Completo
-Utilizamos el compilador `gcc` para unir ambos códigos fuente. Agregamos el flag `-g` para incluir información de depuración, lo cual es fundamental para el posterior análisis en GDB.
+* **Entorno:** Linux / WSL (Arquitectura x86-64).
+* **Python 3:** Intérprete y gestor `pip` (Librería `requests` instalada).
+* **Herramientas de compilación:** GCC y Binutils (`build-essential`, `as`).
+* **Debugging:** GDB (Fundamental para la inspección de memoria documentada en la Parte 2).
 
-Ejecutar el siguiente comando en la terminal:
-```bash
-gcc -g -o programa_gini main.c gini_asm.s
-```
-Al ejecutar el binario resultante, el programa realiza la llamada a Python, captura el valor flotante, realiza la conversión de tipos en C y ejecuta la lógica aritmética en Assembler.
-```bash
-./programa_gini
-```
+---
 
-Salida de la terminal:
+## Conclusión General
 
-![Resultado de ejecutar la iteración 1](img/iteracion2.png)
+El desarrollo de este trabajo práctico permitió consolidar de forma empírica los conceptos teóricos sobre la arquitectura x86-64 y la interacción directa entre lenguajes de distinto nivel de abstracción. A partir de la implementación dividida en fases, destacamos los siguientes hitos:
 
-### 2: Depuración y Comprobación del Stack Frame (GDB)
+* **Interoperabilidad de Lenguajes:** Se logró establecer un puente estable y eficiente mediante la compilación de librerías compartidas (`.so`). Python delegó exitosamente el procesamiento numérico y el formateo a C, demostrando cómo los lenguajes de alto nivel pueden apoyarse en lenguajes nativos para acercarse al hardware sin perder la versatilidad web.
+* **Dominio de la Convención de Llamadas:** La transición hacia la Parte 2 exigió un entendimiento estricto de la *System V AMD64 ABI*. La transferencia de datos de punto flotante (`double`) y la correcta captura de los retornos numéricos entre C y Ensamblador validaron nuestro control sobre la lógica de los registros y los tipos de datos (truncamiento vía `cvttsd2si`).
+* **Transparencia del Stack Frame:** El análisis paso a paso documentado en `Stackframe.md` representa el logro técnico más importante del equipo. Mediante GDB, logramos "desnudar" el comportamiento implícito del procesador: evidenciamos cómo la instrucción `call` empuja la dirección de retorno a la pila, cómo el prólogo salvaguarda el contexto de la función llamadora (`pushq %rbp`), y comprobamos físicamente que los argumentos pasados por memoria residen en *offsets* predecibles.
 
-**Análisis de la memoria capturada:**
-Al inspeccionar los bloques de 8 bytes a partir de la nueva cima de la pila (`%rsp`), se observa la estructura exacta del Stack Frame:
-
-* **Primera dirección (`0x7fffffffd920`)**: Contiene el viejo `%rbp` (el "ancla" de `main`), guardado por la instrucción `pushq %rbp`.
-* **Segunda dirección (a 8 bytes, implícita al lado de la primera)**: Contiene la dirección de retorno a la función `main` (`0x...52ed`).
-* **Tercera dirección (`0x7fffffffd930`)**: A exactamente 16 bytes del RBP actual, se encuentra el valor `0x2a` (42 en decimal). Esto confirma que, al saturar los 6 registros de propósito general, el 7mo argumento viajó correctamente por la memoria hacia la subrutina.
+En definitiva, este repositorio trasciende la simple operación aritmética de incrementar un número, convirtiéndose en una demostración comprobable de cómo los datos atraviesan el silicio, la memoria y las capas de software.
