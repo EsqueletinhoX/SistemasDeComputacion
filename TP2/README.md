@@ -26,9 +26,9 @@ Para evidenciar la evolución técnica del código y facilitar su corrección, e
 
 Para comprender la totalidad del flujo de trabajo, recomendamos explorar el repositorio en el siguiente orden:
 
-1. **`Parte_1/`**: Contiene la implementación base. Revisar su archivo `README.md` para las instrucciones de compilación de la *shared library* y ejecución.
+1. **`Parte_1/`**: Contiene la implementación base. Revisar su archivo `README.md` para las instrucciones de compilación y ejecución.
 2. **`Parte_2/`**: Contiene la implementación avanzada uniendo C y ASM. Revisar su archivo `README.md` para el proceso de ensamblado y linkeo.
-3. **`Parte_2/Stackframe.md`**: Documento detallado con la inspección empírica de la memoria utilizando GDB. **Este es el núcleo analítico del trabajo.**
+3. **`Parte_2/Stackframe.md`**: Documento detallado con la inspección empírica de la memoria utilizando GDB.
 
 *(Nota: Se recomienda leer la documentación de las carpetas mencionadas antes de pasar a la conclusión general).*
 
