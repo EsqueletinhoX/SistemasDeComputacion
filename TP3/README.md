@@ -183,7 +183,7 @@ gdt_end:
 gdtr:
     .word gdt_end - gdt_start - 1 # Tamaño de la GDT
     .long gdt_start               # Dirección base de la GDT
-
+```
 
 
 ### Bibliografia
