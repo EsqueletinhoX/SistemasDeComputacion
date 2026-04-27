@@ -48,10 +48,39 @@ Ejemplos de funciones:
 
 ### ¿Qué es Converged Security and Management Engine (CSME), the Intel Management Engine BIOS Extension (Intel MEBx).?
 
+CSME
+
+CSME surge en 2017/2028 como renombre de loq ue era ME (Intel Management Engine) un subsistemadesarrollado en 2006. El CSME es un microcontrolador independiente que se encuentra en el chipset y cuenta con microprocesador propio, tiene su propia ram y corre su propio sistema operativo. Funciona completamente independiente de la CPU principal, funciona siempre que la placa madre tenga tension, incluso cuando el SO esta apagado o la maquina en estado de suspension.
+Las principales funciones de CSME son:
+- Seguridad del firmware: es el primer codigo que se ejecuta cuando se energiza la placa madre, verifica la integridad criptografica de la UEFI
+- Gestion remota: permite encender, apagar, reiniciar, acceder a la consola, redirigir el teclado y el video, o reinstalar el SO de forma remota.
+- Boot guard: permite "quemar" en fusibles permanentes un hash del firmware legitimo, de modo que si alguien modifica la BIOS, el sistema no arranca.
+
+Intel MEBx
+
+Es la interfaz de configuracion del CSME durante el arranque del sistema, de manera similar  a como la UEFI/BIOS permite configurar parametros del hardware.
+Desde el MEBx se puede:
+- Habilitar o deshabilitar AMT
+- COnfigurar credenciales de acceso remoto
+- Configurar la interfaz de red que se usara para la gestion
+- Establecer politicas de acceso
+- Activar KVM (Keyboard Video Mouse) remoto por hardware
 
 ### ¿Qué es coreboot ? ¿Qué productos lo incorporan ?¿Cuales son las ventajas de su utilización?
 
+Coreboot se diferencia de la BIOS/UEFI, ya que en lugar de ser un firmware monolitico que implementa toda una interfaz de compatibilidad con hardware antiguo, coreboot hace lo minimo indispensable en hardware y delega todo lo demas a un payload separado.
+Los productos que lo incorporan son:
+- Google chromebooks
+- System 76: fabricante de laptops y workstations linux
+- Purims: fabricante de laptops orientadas a privacidad
+- Qemu: firmware de maquinas virtuales
 
+Las ventajas de Coreboot son:
+- Velcidad de arranque: Al no cargar decadas de compatibilidad legacy, coreboot puede inicializar el hardware y entregar control al SO en tiempos dramaticamente menores.
+- Transparencia y auditabilidad: Es codigo abierto, cualquiera puede aauditar exactamente que hace el firmware.
+- Menor superficie de ataque: Al tener lo minimo la superficie de ataque es menor
+- Modularidad: La arquitectura payload permite adaptar el firmware
+- Independencia del vendedor: Al no depender del codigo del propietario, se puede actualizar el firmaware de equipos que el fabricante ya no soporta.  
 
 
 
