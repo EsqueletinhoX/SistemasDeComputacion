@@ -424,6 +424,24 @@ Esta indirección permite tres cosas que el modo real no podía dar:
 
 En resumen, los registros de segmento dejan de ser punteros directos para convertirse en *handles* a entradas de una tabla controlada por el sistema, y por eso lo que se les escribe son selectores con la forma `índice·8 + TI·4 + RPL`.
 
+## Conclusión
+
+Este trabajo práctico permitió recorrer en profundidad la secuencia de arranque de una PC x86, desde la imagen MBR más simple hasta el pasaje completo a modo protegido con control a nivel de bit de los descriptores de segmento.
+
+Los puntos más importantes que quedan claros al terminar el trabajo son:
+
+**Arranque y BIOS/UEFI.** La BIOS carga exactamente 512 bytes en `0x7C00` y salta ahí; todo lo que pase después es responsabilidad del bootloader. UEFI reemplaza ese mecanismo con un firmware de 32/64 bits que ofrece servicios propios, soporte GPT, Secure Boot y acceso total a la RAM desde el inicio. Coreboot va un paso más allá y elimina la capa de compatibilidad legacy, reduciendo el firmware a lo mínimo necesario.
+
+**Modo real vs modo protegido.** En modo real el procesador solo puede acceder a 1 MiB y no tiene ningún mecanismo de protección: cualquier código puede escribir cualquier dirección. El pasaje a modo protegido requiere habilitar A20, cargar una GDT válida y setear el bit `PE` de `CR0`, seguido de un far jump para recargar `CS` y vaciar la cola de prefetch. A partir de ahí, cada acceso a memoria pasa por la unidad de protección de la CPU.
+
+**GDT y selectores.** Los registros de segmento dejan de contener bases directas para convertirse en selectores: índices a entradas de la GDT donde el procesador lee la base, el límite y los atributos del segmento. Esa indirección es lo que hace posible el aislamiento entre procesos, los niveles de privilegio y la protección por tipo de acceso.
+
+**Protección en hardware.** Cambiar un único bit del descriptor de datos (el bit `W` del byte de access, de `0x92` a `0x90`) fue suficiente para que el procesador disparara una `#GP` ante el primer intento de escritura sobre ese segmento. La ausencia de IDT escaló la falla por `#GP → #DF → triple fault → reset`, lo que ilustra de manera concreta cómo funciona el manejo de excepciones en x86.
+
+**Linker y formato binario.** El linker no solo combina objetos: asigna las direcciones definitivas a cada símbolo. Sin `ORIGIN = 0x7C00` en el script, todas las referencias a etiquetas estarían mal calculadas y el código fallaría en tiempo de ejecución. La opción `--oformat binary` elimina todo header ELF y genera los bytes exactos que la BIOS espera encontrar en el sector de arranque.
+
+En conjunto, el TP muestra que el hardware x86 pone todos los mecanismos de protección a disposición del software, pero depende completamente del bootloader y el sistema operativo utilizarlos correctamente. Un solo byte mal configurado puede llevar al procesador al reset; uno bien configurado es la base de toda la seguridad que ofrecen los sistemas operativos modernos.
+
 ### Bibliografia
-- https://www.lenovo.com/ar/es/glosario/uefi/?orgRef=https%253A%252F%252Fwww.google.com%252F&srsltid=AfmBOoqRwmyjiC2P8mG_-BWqRwpSsGSIz4byrFluFUqVfA7tWc6FsPN8
+- https://www.lenovo.com/ar/es/glosario/uefi/?orgRef=https%253A%252F%252Fwww.google.com%252F&srsltid=AfmBOoqRwmyjiC2P8mG_-BWqRwpSsGZIz4byrFluFUqVfA7tWc6FsPN8
 - https://unaaldia.hispasec.com/2023/12/vulnerabilidades-criticas-en-uefi-logofail-expone-a-dispositivos-x86-y-arm.html
