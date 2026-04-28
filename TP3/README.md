@@ -1,7 +1,18 @@
-# Sistemas de Computacion
-## TP3 - Modo real vs modo protegido
+# Sistemas de Computación - Trabajo Práctico N° 3
 
+Modo real vs modo protegido
 
+**Nombres**  
+_Baccino, Luca; Painenao, Juan Manuel; Alejandro R. Stangaferro;_  
+**Claude's Interns**
+
+**Facultad de Ciencias Exactas, Físicas y Naturales**  
+**Sistemas de Computación**
+**Profesores**
+_Javier A. Jorge; Miguel A. Solinas;_
+**2026**
+
+## Respuestas
 ### Creacion de una imagen booteable
 
 Crear imagen booteable simple:
