@@ -1,7 +1,18 @@
-# Sistemas de Computacion
-## TP3 - Modo real vs modo protegido
+# Sistemas de Computación - Trabajo Práctico N° 3
 
+Modo real vs modo protegido
 
+**Nombres**  
+_Baccino, Luca; Painenao, Juan Manuel; Alejandro R. Stangaferro;_  
+**Claude's Interns**
+
+**Facultad de Ciencias Exactas, Físicas y Naturales**  
+**Sistemas de Computación**
+**Profesores**
+_Javier A. Jorge; Miguel A. Solinas;_
+**2026**
+
+## Respuestas
 ### Creacion de una imagen booteable
 
 Crear imagen booteable simple:
@@ -154,7 +165,7 @@ El archivo `boot_pm.s` es un MBR de 512 bytes (firma `0xAA55`) cargado por la BI
 6. **Cargar `DS`, `ES`, `FS`, `GS`, `SS` con el selector `0x10`.** Después de eso ya estamos en modo protegido pleno y se inicializa el stack.
 7. **Imprimir el mensaje en la VGA.** En modo protegido ya no se puede usar `int 0x10`, así que se escribe directamente en el framebuffer de texto en `0xB8000` (cada celda son dos bytes: carácter + atributo de color).
 
-Fragmento clave (extraído de `boot_pm.s`):
+Fragmento extraído de `boot_pm.s`:
 
 ```asm
 .code16
@@ -226,7 +237,7 @@ El descriptor de datos en la GDT queda así (notar el byte `base[16:23] = 0x01`)
 .byte   0x00
 ```
 
-Como las bases son diferentes, el offset 0 visto desde `DS` ya **no** apunta al mismo byte físico que el offset 0 visto desde `CS`:
+Como las bases son diferentes, el offset 0 visto desde `DS` ya no apunta al mismo byte físico que el offset 0 visto desde `CS`:
 
 - `CS:0x0000` → dirección física `0x00000000` (donde arranca la memoria)
 - `DS:0x0000` → dirección física `0x00010000` (a 64 KiB del inicio)
@@ -243,7 +254,7 @@ cld
 rep movsb
 ```
 
-Ya en modo protegido, lectura y escritura usan **el mismo `DS`** pero con offsets distintos:
+Ya en modo protegido, lectura y escritura usan el mismo `DS` pero con offsets distintos:
 
 ```asm
 xorl    %esi, %esi          # DS:0       => fisica 0x10000  (mensaje)
@@ -260,7 +271,7 @@ El GIF muestra que boot_pm.bin y boot_segmentos.bin se diferencian en un único 
 
 ### 3. Segmento de datos de solo lectura — qué pasa al escribir
 
-`boot_readonly.s` es idéntico a `boot_pm.s` salvo por **un único bit** en el descriptor de datos:
+`boot_readonly.s` es idéntico a `boot_pm.s` salvo por un único bit en el descriptor de datos:
 
 ```asm
 # Datos READ-ONLY:  access = 0x90 = 1 00 1 0000
@@ -278,21 +289,21 @@ El programa, después de pasar a modo protegido, primero escribe `RO` en la VGA 
 movb    $0xFF, (%edi)
 ```
 
-Sobre el segmento `DS` cuyo descriptor está marcado como _read-only_. Esa escritura genera una **#GP — General Protection Fault (vector 13)**: la unidad de protección del procesador detecta que el descriptor no permite escritura y aborta la instrucción antes de modificar memoria.
+Sobre el segmento `DS` cuyo descriptor está marcado como _read-only_. Esa escritura genera una #GP — General Protection Fault (vector 13): la unidad de protección del procesador detecta que el descriptor no permite escritura y aborta la instrucción antes de modificar memoria.
 
 #### ¿Qué debería suceder a continuación?
 
-Lo que el procesador hace ante una `#GP` está descripto en el manual de Intel (vol. 3, _Interrupt and Exception Handling_). El flujo "normal" es:
+El flujo "normal" es:
 
-1. La CPU consulta la **IDT** (Interrupt Descriptor Table) en la entrada 13.
+1. La CPU consulta la IDT (Interrupt Descriptor Table) en la entrada 13.
 2. Encuentra un _gate_ válido que describe el handler de `#GP`.
 3. Salta al handler con un código de error en la pila y deja que el sistema operativo decida qué hacer (usualmente terminar el proceso).
 
-En nuestro caso **nunca cargamos una IDT**, así que el procesador no encuentra el gate de `#GP` y eleva la falla:
+En nuestro caso nunca cargamos una IDT, así que el procesador no encuentra el gate de `#GP` y eleva la falla:
 
 1. `#GP` no manejada → la CPU intenta entrar a `#DF` (_Double Fault_, vector 8).
-2. Tampoco hay handler para `#DF` → **triple fault**.
-3. Un triple fault provoca el **reset del procesador**, que reinicia toda la máquina.
+2. Tampoco hay handler para `#DF` → triple fault.
+3. Un triple fault provoca el reset del procesador, que reinicia toda la máquina.
 
 En QEMU el efecto visible es que la VM se reinicia (o se cierra, si se la corre con `-no-reboot`).
 
@@ -333,14 +344,14 @@ CPU Reset (CPU 0)                            <- triple fault
 
 En el GIF se ven simultáneamente las tres ventanas:
 
-- **Terminal de la izquierda — gdb**: se conecta a QEMU con
+- Terminal de la izquierda — gdb: se conecta a QEMU con
   `target remote :1234`, pone un breakpoint en `0x7c00` (primer byte del
   bootloader) y avanza con `si` instrucción por instrucción. Pasa por la
   habilitación de A20, la carga de la GDT, la activación del bit PE de CR0
   y el `ljmp` que entra a 32 bits. Una vez en modo protegido, el `EIP` llega
   a `0x7c27`, donde está la instrucción `mov %eax, %ss`.
 
-- **Terminal de la derecha — log de QEMU** (con `-d int,cpu_reset`): muestra el
+- Terminal de la derecha, log de QEMU (con `-d int,cpu_reset`): muestra el
   dump de la CPU justo después del fallo. En la línea de los selectores se
   ven los atributos de cada segmento:
   
@@ -353,17 +364,17 @@ SS =0000 ... DPL=0 DS16 [-WA]
   El descriptor de datos quedó marcado como solo lectura (access byte
   `0x90`), y eso se ve reflejado en los flags `[--A]` (sin `W`).
 
-- **Ventana de QEMU [Paused]**: la VM queda congelada porque corremos
+- Ventana de QEMU [Paused]: la VM queda congelada porque corremos
   con `-no-reboot -no-shutdown`. Sin esa opción, el procesador se
   reiniciaría solo y volveríamos a ver SeaBIOS arrancando.
 
 #### Por qué el fault ocurre en `mov %eax, %ss`
 
 El intento de escritura explícita que está más adelante en el código
-(`movb $0xFF, (%edi)`) **nunca llega a ejecutarse**: el procesador detecta
+(`movb $0xFF, (%edi)`) nunca llega a ejecutarse: el procesador detecta
 una violación de protección antes, en la propia carga de SS. La regla del
-modo protegido dice que **SS solo puede cargarse con un selector que apunte
-a un segmento de datos escribible**. Como el descriptor 0x10 tiene `RW=0`,
+modo protegido dice que SS solo puede cargarse con un selector que apunte
+a un segmento de datos escribible. Como el descriptor 0x10 tiene `RW=0`,
 apenas se ejecuta `mov %eax, %ss` la CPU dispara `#GP`. Es la primera
 instrucción que toca el segmento de datos read-only para escribir, y la
 unidad de protección la corta en seco.
@@ -383,8 +394,8 @@ Triple fault
    del handler de `#GP` y vuelve a generar `#GP` al intentar leerlo.
 3. Eso escala a `#DF` (vector `0x8`, _Double Fault_), pero el handler de
    `#DF` tampoco existe → `#GP` otra vez.
-4. La tercera excepción seguida es lo que se define como **triple
-   fault**, y la única reacción posible del procesador es resetearse.
+4. La tercera excepción seguida es lo que se define como triple
+   fault, y la única reacción posible del procesador es resetearse.
    Con `-no-reboot` QEMU detiene la VM en lugar de reiniciar, y por eso
    el título de la ventana dice `[Paused]`.
 
@@ -394,7 +405,7 @@ mecanismo de protección y llevar al procesador hasta el reset.
 
 ### 4. ¿Con qué valor se cargan los registros de segmento en modo protegido? ¿Por qué?
 
-Se cargan con un **selector** de 16 bits, no con una dirección base. El formato del selector es:
+Se cargan con un selector de 16 bits, no con una dirección base. El formato del selector es:
 
 ```
  15                                3   2   1   0
@@ -403,9 +414,9 @@ Se cargan con un **selector** de 16 bits, no con una dirección base. El formato
 +-----------------------------------+---+-------+
 ```
 
-- **Índice (bits 15..3):** posición del descriptor dentro de la tabla (8 bytes por entrada).
-- **TI (bit 2):** _Table Indicator_. `0` = GDT, `1` = LDT.
-- **RPL (bits 1..0):** _Requested Privilege Level_ (0 = ring 0, 3 = ring 3).
+- Índice (bits 15..3): posición del descriptor dentro de la tabla (8 bytes por entrada).
+- TI (bit 2): Table Indicator. `0` = GDT, `1` = LDT.
+- RPL (bits 1..0): Requested Privilege Level (0 = ring 0, 3 = ring 3).
 
 En los programas de este desafío los selectores son:
 
@@ -414,15 +425,15 @@ En los programas de este desafío los selectores son:
 | `CS`     | `0x08`  | índice 1 (segmento de código), TI=0 (GDT), RPL=0         |
 | `DS/ES/SS/FS/GS` | `0x10` | índice 2 (segmento de datos), TI=0 (GDT), RPL=0   |
 
-**¿Por qué un selector y no una base?** Porque la lógica de protección del 80386 hacia adelante separó *qué* segmento se usa (selector, visible al programador) de *cómo* es ese segmento (descriptor, almacenado en la GDT/LDT, controlado por el sistema operativo). El descriptor contiene la base, el límite, el nivel de privilegio, el tipo (código/datos), si es leíble/escribible/ejecutable, etc. Cuando el procesador carga un selector en un registro de segmento, internamente lee el descriptor referenciado y guarda toda esa información en un registro caché invisible del propio registro de segmento (la parte que no puede manipular el programador, donde quedan almacenados base, límite y atributos del descriptor leído). Las accesos siguientes usan esa caché, sin volver a consultar la tabla.
+¿Por qué un selector y no una base? Porque la lógica de protección del 80386 hacia adelante separó qué segmento se usa (selector, visible al programador) de cómo es ese segmento (descriptor, almacenado en la GDT/LDT, controlado por el sistema operativo). El descriptor contiene la base, el límite, el nivel de privilegio, el tipo (código/datos), si es leíble/escribible/ejecutable, etc. Cuando el procesador carga un selector en un registro de segmento, internamente lee el descriptor referenciado y guarda toda esa información en un registro caché invisible del propio registro de segmento. Las accesos siguientes usan esa caché, sin volver a consultar la tabla.
 
 Esta indirección permite tres cosas que el modo real no podía dar:
 
-- **Protección:** el código de usuario solo puede usar selectores que el SO le habilitó; si intenta cargar uno con un RPL inferior al CPL actual, la CPU dispara `#GP`.
-- **Aislamiento:** dos procesos pueden tener LDTs distintas y compartir la GDT, viendo "su propia" memoria sin pisar al otro.
-- **Atributos por segmento:** marcar un segmento como solo lectura, ejecutable, sistema, conformante, etc., como vimos con el descriptor `0x90` del punto 3.
+- Protección: el código de usuario solo puede usar selectores que el SO le habilitó; si intenta cargar uno con un RPL inferior al CPL actual, la CPU dispara `#GP`.
+- Aislamiento: dos procesos pueden tener LDTs distintas y compartir la GDT, viendo "su propia" memoria sin pisar al otro.
+- Atributos por segmento: marcar un segmento como solo lectura, ejecutable, sistema, conformante, etc., como vimos con el descriptor `0x90` del punto 3.
 
-En resumen, los registros de segmento dejan de ser punteros directos para convertirse en *handles* a entradas de una tabla controlada por el sistema, y por eso lo que se les escribe son selectores con la forma `índice·8 + TI·4 + RPL`.
+En resumen, los registros de segmento dejan de ser punteros directos para convertirse en handles a entradas de una tabla controlada por el sistema, y por eso lo que se les escribe son selectores con la forma `índice·8 + TI·4 + RPL`.
 
 ## Conclusión
 
@@ -430,15 +441,15 @@ Este trabajo práctico permitió recorrer en profundidad la secuencia de arranqu
 
 Los puntos más importantes que quedan claros al terminar el trabajo son:
 
-**Arranque y BIOS/UEFI.** La BIOS carga exactamente 512 bytes en `0x7C00` y salta ahí; todo lo que pase después es responsabilidad del bootloader. UEFI reemplaza ese mecanismo con un firmware de 32/64 bits que ofrece servicios propios, soporte GPT, Secure Boot y acceso total a la RAM desde el inicio. Coreboot va un paso más allá y elimina la capa de compatibilidad legacy, reduciendo el firmware a lo mínimo necesario.
+- Arranque y BIOS/UEFI. La BIOS carga exactamente 512 bytes en `0x7C00` y salta ahí; todo lo que pase después es responsabilidad del bootloader. UEFI reemplaza ese mecanismo con un firmware de 32/64 bits que ofrece servicios propios, soporte GPT, Secure Boot y acceso total a la RAM desde el inicio. Coreboot va un paso más allá y elimina la capa de compatibilidad legacy, reduciendo el firmware a lo mínimo necesario.
 
-**Modo real vs modo protegido.** En modo real el procesador solo puede acceder a 1 MiB y no tiene ningún mecanismo de protección: cualquier código puede escribir cualquier dirección. El pasaje a modo protegido requiere habilitar A20, cargar una GDT válida y setear el bit `PE` de `CR0`, seguido de un far jump para recargar `CS` y vaciar la cola de prefetch. A partir de ahí, cada acceso a memoria pasa por la unidad de protección de la CPU.
+- Modo real vs modo protegido. En modo real el procesador solo puede acceder a 1 MiB y no tiene ningún mecanismo de protección: cualquier código puede escribir cualquier dirección. El pasaje a modo protegido requiere habilitar A20, cargar una GDT válida y setear el bit `PE` de `CR0`, seguido de un far jump para recargar `CS` y vaciar la cola de prefetch. A partir de ahí, cada acceso a memoria pasa por la unidad de protección de la CPU.
 
-**GDT y selectores.** Los registros de segmento dejan de contener bases directas para convertirse en selectores: índices a entradas de la GDT donde el procesador lee la base, el límite y los atributos del segmento. Esa indirección es lo que hace posible el aislamiento entre procesos, los niveles de privilegio y la protección por tipo de acceso.
+- GDT y selectores. Los registros de segmento dejan de contener bases directas para convertirse en selectores: índices a entradas de la GDT donde el procesador lee la base, el límite y los atributos del segmento. Esa indirección es lo que hace posible el aislamiento entre procesos, los niveles de privilegio y la protección por tipo de acceso.
 
-**Protección en hardware.** Cambiar un único bit del descriptor de datos (el bit `W` del byte de access, de `0x92` a `0x90`) fue suficiente para que el procesador disparara una `#GP` ante el primer intento de escritura sobre ese segmento. La ausencia de IDT escaló la falla por `#GP → #DF → triple fault → reset`, lo que ilustra de manera concreta cómo funciona el manejo de excepciones en x86.
+- Protección en hardware. Cambiar un único bit del descriptor de datos (el bit `W` del byte de access, de `0x92` a `0x90`) fue suficiente para que el procesador disparara una `#GP` ante el primer intento de escritura sobre ese segmento. La ausencia de IDT escaló la falla por `#GP → #DF → triple fault → reset`, lo que ilustra de manera concreta cómo funciona el manejo de excepciones en x86.
 
-**Linker y formato binario.** El linker no solo combina objetos: asigna las direcciones definitivas a cada símbolo. Sin `ORIGIN = 0x7C00` en el script, todas las referencias a etiquetas estarían mal calculadas y el código fallaría en tiempo de ejecución. La opción `--oformat binary` elimina todo header ELF y genera los bytes exactos que la BIOS espera encontrar en el sector de arranque.
+- Linker y formato binario. El linker no solo combina objetos: asigna las direcciones definitivas a cada símbolo. Sin `ORIGIN = 0x7C00` en el script, todas las referencias a etiquetas estarían mal calculadas y el código fallaría en tiempo de ejecución. La opción `--oformat binary` elimina todo header ELF y genera los bytes exactos que la BIOS espera encontrar en el sector de arranque.
 
 En conjunto, el TP muestra que el hardware x86 pone todos los mecanismos de protección a disposición del software, pero depende completamente del bootloader y el sistema operativo utilizarlos correctamente. Un solo byte mal configurado puede llevar al procesador al reset; uno bien configurado es la base de toda la seguridad que ofrecen los sistemas operativos modernos.
 
