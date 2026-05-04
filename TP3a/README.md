@@ -461,21 +461,33 @@ https://github.com/user-attachments/assets/ac0d9df6-2244-4f8a-86cf-ee8f7f9f2785
 
 ---
 
-## 5. Conclusiones
+ Conclusiones generales
 
-1. **Bypass del modelo de confianza**: deshabilitar Secure Boot rompe la cadena de verificación criptográfica del firmware. Esto permite ejecutar binarios arbitrarios pre-OS, lo que es útil para investigación pero ilustra por qué la presencia de Secure Boot es relevante en un modelo de amenaza realista (un atacante con acceso físico podría desactivarlo si el setup no está protegido por contraseña de supervisor).
+A lo largo de los tres trabajos prácticos recorrimos el ciclo completo de una aplicación UEFI: desde >
 
-2. **Superficie de ataque pre-OS**: en el momento en que `aplicacion.efi` se ejecuta, **no existe** un kernel, no existen anillos de privilegio aplicados al userland, no hay ASLR, no hay DEP a nivel de proceso. El binario corre con los servicios *Boot Services* de UEFI disponibles, equivalentes funcionales a "ring 0" sobre el firmware. Cualquier vulnerabilidad explotada aquí compromete al sistema antes incluso de que el bootloader del SO entre en juego.
+## 1. UEFI como sistema operativo mínimo pre-OS
 
-3. **Reproducibilidad**: el procedimiento es totalmente reproducible en cualquier equipo UEFI x86_64 con la opción de deshabilitar Secure Boot expuesta al usuario. La estructura `\EFI\BOOT\BOOTX64.EFI` es portable entre fabricantes.
+El TP1 dejó en claro que UEFI no es simplemente un "BIOS moderno", sino un entorno de ejecución compl>
 
-4. **Mitigaciones recomendadas en un entorno productivo**:
-   - Mantener Secure Boot **habilitado**.
-   - Configurar contraseña de supervisor (BIOS) para impedir cambios al firmware.
-   - Restringir el orden de boot y deshabilitar el arranque desde USB.
-   - Habilitar `BootGuard` / `Hardware Root of Trust` en plataformas que lo soporten.
+## 2. Del código fuente al binario ejecutable por firmware
 
----
+El TP2 mostró que producir un `.efi` no es compilar "un programa más". Al no haber libc ni syscalls, >
+
+## 3. Ejecución en bare metal y materialización de la superficie de ataque
+
+El TP3 cerró el ciclo llevando el binario a una máquina real. Lo más significativo no fue que la apli>
+
+## 4. Secure Boot como pieza central del modelo de confianza
+
+Los tres TPs convergen en una conclusión: **Secure Boot no es opcional en un modelo de amenaza realis>
+
+## 5. Aprendizajes transversales
+
+- **El firmware es código**, y como todo código tiene bugs, decisiones de diseño y superficies de ata>
+- **La separación SO / firmware es más porosa de lo que parece**: los Runtime Services siguen vivos d>
+- **Las herramientas estándar alcanzan**: con QEMU + OVMF, gnu-efi, Ghidra y un pendrive se puede rec>
+
+En síntesis, los tres TPs funcionan como un recorrido coherente: el TP1 explica el "qué" y el "cómo" >
 
 ## 6. Referencias
 
