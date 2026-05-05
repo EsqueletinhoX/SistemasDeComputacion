@@ -321,3 +321,174 @@ Ghidra no conoce los tipos UEFI, por lo que EFI_STATUS aparece como undefined8 y
 En este caso el if fue eliminado por GCC antes de llegar al binario, por lo que Ghidra no muestra la comparación. De haberla mostrado, 0xCC aparecería como -52 porque Ghidra infiere el tipo como signed char y aplica complemento a dos: el bit más significativo de 1100 1100 es 1, resultando en -(256 - 204) = -52. Esto importa en ciberseguridad porque 0xCC es el opcode de INT 3 (software breakpoint), y un analista que ve -52 puede no reconocerlo, pasando por alto breakpoints inyectados o mecanismos de anti-debugging en el firmware.
 
 ---
+
+# TP3 — Ejecución de aplicación UEFI en Bare Metal
+
+## Objetivo
+
+Trasladar el binario `aplicacion.efi` (compilado en el TP2) desde el entorno de desarrollo a una computadora real (Acer predator pt314-52s), sorteando las restricciones impuestas por **Secure Boot** y ejecutando el binario directamente desde la **UEFI Shell**, fuera de cualquier sistema operativo.
+
+---
+
+## 1. Marco teórico
+
+### 1.1 ¿Por qué Secure Boot bloquea nuestro binario?
+
+Secure Boot es un mecanismo definido en la especificación UEFI que verifica, antes de transferir el control, que todo binario `.efi` cargado durante el arranque esté firmado digitalmente por una autoridad cuya clave pública resida en la base de datos `db` del firmware. Habitualmente esta base contiene certificados de **Microsoft** y del **OEM** (en este caso Acer).
+
+Nuestros binarios no están en esa cadena de confianza:
+
+- **`Shell.efi` de TianoCore**: distribuido por el proyecto EDK II como binario de desarrollo, no firmado por Microsoft.
+- **`aplicacion.efi`**: compilado localmente en el TP2, sin firma alguna.
+
+Si Secure Boot estuviera activo, el firmware respondería con `Security Violation` (`EFI_SECURITY_VIOLATION`, status code `0x800000000000001A`) y abortaría la carga.
+
+### 1.2 ¿Por qué FAT32 en el USB?
+
+La especificación UEFI (sección 13.3 — *File System Format*) exige que la **System Partition (ESP)** y todo medio de arranque removible utilicen el sistema de archivos **FAT** (FAT12/16/32). El firmware no incluye drivers para ext4, NTFS, exFAT u otros, por lo que cualquier otra opción resultaría invisible al gestor de arranque.
+
+### 1.3 ¿Por qué la ruta `/EFI/BOOT/BOOTX64.EFI`?
+
+Cuando un medio removible no posee una entrada NVRAM previa, el firmware busca un *fallback path* estandarizado en función de la arquitectura. Para x86_64 esa ruta es exactamente `\EFI\BOOT\BOOTX64.EFI`. Al colocar la Shell allí, garantizamos que el firmware la cargue automáticamente al seleccionar el USB en el boot menu.
+
+---
+
+## 2. Preparación del medio de arranque (USB)
+
+### 2.1 Identificación del dispositivo
+
+```bash
+lsblk
+```
+
+> en nuestro caso esta en /dev/sda
+### 2.2 Comandos ejecutados
+
+```bash
+# 1. Formatear el pendrive en FAT32 (requerimiento de UEFI)
+sudo mkfs.vfat -F 32 /dev/sda
+
+# 2. Montar el pendrive
+sudo mount /dev/sda /mnt
+
+# 3. Crear la estructura estandarizada de directorios
+sudo mkdir -p /mnt/EFI/BOOT
+
+# 4. Descargar la UEFI Shell oficial de TianoCore
+sudo wget https://github.com/tianocore/edk2/raw/UDK2018/ShellBinPkg/UefiShell/X64/Shell.efi \
+     -O /mnt/EFI/BOOT/BOOTX64.EFI
+
+# 5. Copiar la aplicación compilada en el TP2 a la raíz del pendrive
+sudo cp ~/uefi_security_lab/aplicacion.efi /mnt/
+
+# 6. Sincronizar buffers y desmontar
+sudo sync
+sudo umount /mnt
+```
+
+### 2.3 Estructura resultante del USB
+
+```
+/ (raíz del pendrive, FAT32)
+├── EFI/
+│   └── BOOT/
+│       └── BOOTX64.EFI   ← UEFI Shell de TianoCore
+└── aplicacion.efi        ← binario compilado en el TP2
+```
+
+## 3. Configuración del firmware (Acer predator PT314-52s)
+
+### 3.1 Acceso al setup
+
+Con la laptop apagada, se accedio al boot menu mediante apretar F2 en nuestro caso repetidamente para entrar en la configuracion de la BIOS
+
+### 3.2 Cambios aplicados
+
+| Sección | Parámetro | Valor anterior | Valor nuevo | Justificación |
+|---|---|---|---|---|
+| **Security → Secure Boot** | Secure Boot | `Enabled` | `Disabled` | Nuestros binarios no están firmados por Microsoft/Acer. Con Secure Boot activo, el firmware devolvería `Security Violation` y abortaría la ejecución. |
+| **Startup → UEFI/Legacy Boot** | Boot Mode | (variable) | `UEFI Only` | Forzamos el camino UEFI puro: descartamos CSM/Legacy para que el firmware utilice realmente el cargador `BOOTX64.EFI` y no el MBR. |
+| **Startup → Boot** | USB device | — | Habilitado en la lista | Permite seleccionar el pendrive desde el Boot Menu. |
+
+Guardar y salir con **F10 → Yes**.
+
+
+## 4. Ejecución en Bare Metal
+
+### 4.1 Boot desde el USB
+
+Reiniciar y presionar **F12** para abrir el **Boot Menu**. Seleccionar la entrada correspondiente al pendrive USB.
+
+El firmware carga `\EFI\BOOT\BOOTX64.EFI` → la **UEFI Shell de TianoCore** queda en pantalla.
+
+### 4.2 Comandos en la Shell
+
+```text
+Shell> FS0:
+FS0:\> ls
+FS0:\> aplicacion.efi
+```
+
+Detalle de cada paso:
+
+- **`FS0:`** — cambia el contexto al primer sistema de archivos detectado (el pendrive). Si hubiera más volúmenes, podrían aparecer como `FS1:`, `FS2:`, etc.
+- **`ls`** — lista el contenido raíz del pendrive. Debe verse `aplicacion.efi` y el directorio `EFI`.
+- **`aplicacion.efi`** — invoca al binario. La Shell lo carga vía `LoadImage()` y lo ejecuta con `StartImage()`.
+
+### 4.3 Salida esperada
+
+```
+Iniciando análisis de seguridad... Breakpoint estático alcanzado.
+```
+
+Esta salida se renderiza directamente sobre el framebuffer mediante `gST->ConOut->OutputString()`, sin ningún sistema operativo intermediario, sin drivers de userland, y sin protecciones del kernel — sólo el firmware UEFI y nuestro código. Ademas se agrego el nombre de nuestro grupo en el print previo al analisis de seguridad
+
+### 📸 Evidencia — Ejecución en bare metal
+
+
+![Ejecución de aplicacion.efi](./img/Uefi_real.jpeg)
+
+### 🎥 Video de la ejecución completa
+
+
+
+https://github.com/user-attachments/assets/ac0d9df6-2244-4f8a-86cf-ee8f7f9f2785
+
+En el video puede verse todo el proceso de booteo y ejecucion de aplicacion.efi en la shell
+
+---
+# Conclusiones generales
+
+A lo largo de los tres trabajos prácticos recorrimos el ciclo completo de una aplicación UEFI: desde entender cómo el firmware abstrae el hardware, pasando por el desarrollo y compilación de un binario propio, hasta su ejecución sobre una máquina física real. Cada etapa aportó una mirada distinta sobre el mismo entorno y, en conjunto, permiten extraer varias conclusiones.
+
+## 1. UEFI como sistema operativo mínimo pre-OS
+
+El TP1 dejó en claro que UEFI no es simplemente un "BIOS moderno", sino un entorno de ejecución completo con su propio modelo de drivers (handles + protocolos), gestor de memoria, sistema de archivos (FAT), variables persistentes (NVRAM) y consola interactiva (Shell). El reemplazo de las viejas interrupciones del BIOS (`int 0x10`, `int 0x13`) por una API estructurada de protocolos no es un detalle cosmético: redefine cómo el firmware media el acceso al hardware y abre la puerta a mecanismos como Secure Boot, que dependen justamente de que ningún programa pueda saltearse esa mediación.
+
+## 2. Del código fuente al binario ejecutable por firmware
+
+El TP2 mostró que producir un `.efi` no es compilar "un programa más". Al no haber libc ni syscalls, el código depende exclusivamente de la `EFI_SYSTEM_TABLE` y los protocolos que el firmware expone (de ahí `OutputString` en lugar de `printf`, y UTF-16 en lugar de ASCII). El proceso de tres etapas (GCC → ld con linker script específico → objcopy a PE/COFF) refleja una realidad importante: el formato ejecutable de UEFI es PE/COFF (heredado de Windows), no ELF, y eso condiciona toda la toolchain. El análisis con Ghidra agregó la perspectiva del lado defensivo: ver cómo se ve el binario para un analista, por qué los tipos UEFI se pierden en la decompilación y cómo detalles aparentemente menores (como `0xCC` apareciendo como `-52`) pueden ocultar señales relevantes en un contexto de ciberseguridad.
+
+## 3. Ejecución en bare metal y materialización de la superficie de ataque
+
+El TP3 cerró el ciclo llevando el binario a una máquina real. Lo más significativo no fue que la aplicación corriera, sino el contexto en el que lo hizo: sin sistema operativo, sin anillos de privilegio aplicados, sin ASLR, sin DEP a nivel de proceso, sin antivirus, sin EDR. La salida `Breakpoint estático alcanzado` en pantalla es trivial; lo no trivial es que ese mismo nivel de acceso es el que tiene cualquier código que se ejecute pre-OS. Eso conecta directamente con lo discutido en el TP1 sobre `RuntimeServicesCode` y los bootkits: no es un escenario teórico, es exactamente el escenario que recreamos en laboratorio.
+
+## 4. Secure Boot como pieza central del modelo de confianza
+
+Los tres TPs convergen en una conclusión: **Secure Boot no es opcional en un modelo de amenaza realista**. En el TP1 vimos que el firmware delega la validación criptográfica antes de ejecutar cualquier `Boot####`. En el TP2 produjimos un binario sin firmar, perfectamente funcional. En el TP3 tuvimos que deshabilitar Secure Boot para poder correrlo. Esa secuencia ilustra de punta a punta qué es lo que Secure Boot protege: impide exactamente lo que hicimos nosotros (ejecutar código arbitrario pre-OS) cuando el atacante no tiene una clave en `db`. Por eso las mitigaciones en entornos productivos pasan por mantenerlo habilitado, proteger el setup con contraseña de supervisor y, cuando esté disponible, sumar Boot Guard o un Hardware Root of Trust.
+
+## 5. Aprendizajes transversales
+
+- **El firmware es código**, y como todo código tiene bugs, decisiones de diseño y superficies de ataque. Tratarlo como una caja negra inmutable es una mala estrategia de seguridad.
+- **La separación SO / firmware es más porosa de lo que parece**: los Runtime Services siguen vivos durante toda la ejecución del SO, lo que convierte al firmware en parte de la TCB (Trusted Computing Base) de manera permanente, no solo durante el boot.
+- **Las herramientas estándar alcanzan**: con QEMU + OVMF, gnu-efi, Ghidra y un pendrive se puede recorrer todo el ciclo. La barrera para investigar (o atacar) este nivel del stack es bastante más baja de lo que suele suponerse, lo que refuerza la importancia de las contramedidas a nivel de plataforma.
+
+En síntesis, los tres TPs funcionan como un recorrido coherente: el TP1 explica el "qué" y el "cómo" del entorno, el TP2 muestra cómo producir código que vive en él, y el TP3 demuestra las implicancias prácticas de seguridad cuando ese código se ejecuta sobre hardware real. La conclusión más importante no es técnica sino conceptual: la seguridad del sistema operativo es, en el mejor de los casos, tan buena como la del firmware sobre el que se apoya.
+
+
+## 6. Referencias
+
+- UEFI Specification 2.10, sección 3.5 *Boot Manager* y sección 32 *Secure Boot and Driver Signing*.
+- TianoCore EDK II — *ShellBinPkg*: <https://github.com/tianocore/edk2>
+
+---
