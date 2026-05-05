@@ -528,12 +528,12 @@ Eso lo vuelve un objetivo para los desarrolladores de malware:
 3. **Invisibilidad para el SO.** Los antivirus convencionales escanean el disco y la RAM "de su lado"; muy pocos inspeccionan las páginas de `RuntimeServicesCode`, porque están marcadas como pertenecientes al firmware y son código que el SO no controla.
 4. **Sobreviven a reinstalaciones del SO.** El bootkit modifica la imagen del firmware en SPI flash; en cada arranque siguiente, el firmware vuelve a copiarse a esas páginas de `RuntimeServicesCode` ya infectadas. El SO ve un sistema "limpio", pero el firmware no lo es.
 
-### Pregunta 4
+### Pregunta de Razonamiento 4
 **¿Por qué OutputString y no printf?**
 
 printf pertenece a la libc, que depende del sistema operativo para funcionar. En el entorno UEFI no existe SO, kernel ni syscalls. La única salida disponible es el protocolo ConOut de la EFI_SYSTEM_TABLE, cuya función OutputString es la interfaz de consola que provee el propio firmware. Además, UEFI trabaja con strings UTF-16 (de ahí el prefijo L""), mientras que printf espera ASCII/UTF-8.
 
-### Pregunta 5
+### Pregunta de Razonamiento 5
 **¿Por qué 0xCC aparece como -52 en Ghidra?**
 
 En este caso el if fue eliminado por GCC antes de llegar al binario, por lo que Ghidra no muestra la comparación. De haberla mostrado, 0xCC aparecería como -52 porque Ghidra infiere el tipo como signed char y aplica complemento a dos: el bit más significativo de 1100 1100 es 1, resultando en -(256 - 204) = -52. Esto importa en ciberseguridad porque 0xCC es el opcode de INT 3 (software breakpoint), y un analista que ve -52 puede no reconocerlo, pasando por alto breakpoints inyectados o mecanismos de anti-debugging en el firmware.
