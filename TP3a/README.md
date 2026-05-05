@@ -492,3 +492,48 @@ En síntesis, los tres TPs funcionan como un recorrido coherente: el TP1 explica
 - TianoCore EDK II — *ShellBinPkg*: <https://github.com/tianocore/edk2>
 
 ---
+
+# RESPUESTAS
+
+### Pregunta de Razonamiento 1
+**Al ejecutar `map` y `dh`, vemos protocolos e identificadores en lugar de puertos de hardware fijos. ¿Cuál es la ventaja de seguridad y compatibilidad de este modelo frente al antiguo BIOS?**
+
+En el modelo BIOS, el código que quería usar el hardware tenía dos caminos: o llamaba interrupciones predefinidas (`int 0x10` para video, `int 0x13` para disco) que asumían comportamientos fijos del firmware, o tocaba directamente puertos de I/O y direcciones de memoria conocidas (`0x3F8` para serie, `0xB8000` para texto VGA). Esto trajo dos problemas que UEFI resuelve con el modelo de handles + protocolos.
+
+**Compatibilidad.** El BIOS fijaba la convención del PC IBM original: discos por `int 0x13`, hasta 4 particiones primarias, geometría CHS, MBR de 512 bytes, etc. Cuando aparecieron tecnologías nuevas (USB, SATA, NVMe, GPT, Secure Boot) la BIOS tuvo que ir parchando con módulos como CSM y limitaciones cada vez más artificiales. UEFI, en cambio, define una interfaz abstracta (el protocolo) y deja el cómo implementarla al driver del hardware concreto. Un disco SATA, uno NVMe y uno USB exponen el mismo `EFI_BLOCK_IO_PROTOCOL`: el bootloader y el SO los consumen igual sin saber qué hay debajo. Soportar un nuevo bus es escribir un driver que produzca ese protocolo, no rehacer la convención. 
+
+**Seguridad.**
+**No hay acceso directo al hardware.** Un programa UEFI no toca puertos: tiene que pedirle al firmware un handle y usar el protocolo. El firmware media todos los accesos y puede aplicar políticas (rechazar, auditar, etc.), esto facilita un desarrollo seguro y sin problemas con el hardware.
+
+### Pregunta de Razonamiento 2
+**Observando las variables `Boot####` y `BootOrder`, ¿cómo determina el Boot Manager la secuencia de arranque?**
+
+El Boot Manager, en cada arranque, hace lo siguiente:
+1. **Lee `BootOrder`** desde NVRAM.
+2. **Itera** los IDs en ese orden.
+3. Para cada ID, **lee la `Boot####`** correspondiente y resuelve el device path: el firmware recorre handles/protocolos para localizar el archivo ejecutable `.efi` indicado.
+4. Si el archivo existe y supera Secure Boot (firma válida cuando está activado), **lo carga y ejecuta**. La entrada usada queda registrada en `BootCurrent`.
+5. Si el archivo no se encuentra o falla, **pasa al siguiente ID** de `BootOrder`.
+
+### Pregunta de Razonamiento 3
+**En el mapa de memoria (`memmap`), existen regiones marcadas como `RuntimeServicesCode`. ¿Por qué estas áreas son un objetivo principal para los desarrolladores de malware (Bootkits)?**
+
+- **Runtime Services**: siguen disponibles después de `ExitBootServices`, durante toda la ejecución del SO.
+
+El código que implementa esos Runtime Services vive precisamente en las regiones marcadas `RuntimeServicesCode` del `memmap`. El SO mapea esa memoria en su espacio virtual, y cuando necesita una de esas funciones, salta al firmware. Es decir: es código del firmware ejecutándose dentro del contexto del SO, con privilegio máximo, mientras el sistema está corriendo.
+
+Eso lo vuelve un objetivo para los desarrolladores de malware:
+1. **Persistencia inmune al disco.** El código de los Runtime Services se carga desde la SPI flash de la motherboard en cada arranque. Reformatear el disco, reinstalar Windows, cambiar la SSD: nada de eso lo borra. Solo borra el bootkit reflashear el firmware.
+2. **Privilegio máximo y previo al SO.** Ejecuta antes que cualquier antivirus o EDR. Para el momento en que el SO terminó de cargar, el bootkit ya tomó las decisiones que quería tomar (ej. desactivar verificaciones, modificar el kernel en vuelo, plantar drivers).
+3. **Invisibilidad para el SO.** Los antivirus convencionales escanean el disco y la RAM "de su lado"; muy pocos inspeccionan las páginas de `RuntimeServicesCode`, porque están marcadas como pertenecientes al firmware y son código que el SO no controla.
+4. **Sobreviven a reinstalaciones del SO.** El bootkit modifica la imagen del firmware en SPI flash; en cada arranque siguiente, el firmware vuelve a copiarse a esas páginas de `RuntimeServicesCode` ya infectadas. El SO ve un sistema "limpio", pero el firmware no lo es.
+
+### Pregunta 4
+**¿Por qué OutputString y no printf?**
+
+printf pertenece a la libc, que depende del sistema operativo para funcionar. En el entorno UEFI no existe SO, kernel ni syscalls. La única salida disponible es el protocolo ConOut de la EFI_SYSTEM_TABLE, cuya función OutputString es la interfaz de consola que provee el propio firmware. Además, UEFI trabaja con strings UTF-16 (de ahí el prefijo L""), mientras que printf espera ASCII/UTF-8.
+
+### Pregunta 5
+**¿Por qué 0xCC aparece como -52 en Ghidra?**
+
+En este caso el if fue eliminado por GCC antes de llegar al binario, por lo que Ghidra no muestra la comparación. De haberla mostrado, 0xCC aparecería como -52 porque Ghidra infiere el tipo como signed char y aplica complemento a dos: el bit más significativo de 1100 1100 es 1, resultando en -(256 - 204) = -52. Esto importa en ciberseguridad porque 0xCC es el opcode de INT 3 (software breakpoint), y un analista que ve -52 puede no reconocerlo, pasando por alto breakpoints inyectados o mecanismos de anti-debugging en el firmware.
