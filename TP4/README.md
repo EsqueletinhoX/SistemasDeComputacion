@@ -44,6 +44,46 @@ Firma criptográfica
 
 # Punto 2 - ¿Qué divers/modulos estan cargados en sus propias pc?
 
+Los archivos completos con la salida de `lsmod` de cada equipo se encuentran en el repositorio: `lsmod_ale.txt` (217 módulos) y `lsmod_juanma.txt` (181 módulos).
+
+## Equipo de Ale — Intel/NVIDIA (Acer)
+
+| Categoría | Módulos destacados |
+|---|---|
+| GPU integrada + discreta | `i915`, `xe`, `nvidia`, `nvidia_modeset`, `nvidia_uvm`, `nvidia_drm` |
+| CPU / gestión térmica | `kvm_intel`, `coretemp`, `intel_uncore`, `processor_thermal_device`, `intel_rapl_msr` |
+| Wi-Fi | `iwlmvm`, `iwlwifi` (Intel AX series) |
+| Audio (Intel SoF + SoundWire) | `snd_sof_intel_hda_*`, `soundwire_intel`, `soundwire_bus`, `snd_soc_skl_hda_dsp` |
+| Plataforma / ACPI | `acer_wmi`, `acer_wireless`, `mei`, `mei_hdcp`, `intel_pmc_core` |
+| Almacenamiento / Bus | `nvme`, `vmd`, `spi_nor`, `intel_lpss_pci` |
+
+## Equipo de Juan Ma — AMD (ASUS)
+
+| Categoría | Módulos destacados |
+|---|---|
+| GPU | `amdgpu`, `amdxcp` |
+| CPU / gestión térmica | `kvm_amd`, `k10temp`, `edac_mce_amd`, `amd_pmc`, `ccp` |
+| Wi-Fi | `mt7921e`, `mt7921_common`, `mt76`, `mt76_connac_lib` (MediaTek) |
+| Audio (AMD ACP + CS35L41) | `snd_sof_amd_acp`, `snd_sof_amd_renoir/rembrandt/vangogh/acp63`, `snd_hda_scodec_cs35l41` |
+| Plataforma / ACPI | `asus_wmi`, `asus_nb_wmi`, `hid_asus`, `hid_logitech_hidpp` |
+| Otros periféricos | `cp210x` (USB-Serial), `rtsx_pci` (lector SD), `parport` (puerto paralelo) |
+
+## Comparación entre equipos
+
+```
+Módulos en común:      103
+Solo en Ale (Intel):   114
+Solo en JuanMa (AMD):   78
+```
+
+Las diferencias se explican principalmente por el hardware subyacente:
+
+- **GPU**: Ale carga la pila completa `i915` (Intel iGPU) + `xe` (nuevo driver Intel) + drivers `nvidia_*` (GPU discreta); Juan Ma carga `amdgpu` y nada más.
+- **CPU**: Ale usa `kvm_intel` y la familia `processor_thermal_*` de Intel; Juan Ma usa `kvm_amd`, `k10temp` y `edac_mce_amd` propios de AMD.
+- **Wi-Fi**: chipsets completamente distintos — Intel (`iwlmvm`/`iwlwifi`) vs. MediaTek (`mt7921e`/`mt76`).
+- **Audio**: ambos usan el framework SoF, pero con backends distintos — Intel HDA + SoundWire en Ale, AMD ACP + amplificador CS35L41 en Juan Ma.
+- **Plataforma**: `acer_wmi` en Ale vs. `asus_wmi`/`asus_nb_wmi` en Juan Ma (cada fabricante expone controles de hardware propietarios vía WMI/ACPI).
+- **Módulo propio**: ambos equipos tienen cargado `mimodulo` (el módulo desarrollado en este TP), por eso aparece en los 103 módulos en común.
 
 # Punto 3 - ¿cuales no están cargados pero están disponibles? que pasa cuando el driver de un dispositivo no está disponible.
 
@@ -76,6 +116,11 @@ Cuando falta un modulo critico para el arranque del propio sistema, el sistema n
 https://linux-hardware.org/?probe=7ef899c7ed
 
 ![Act1](./img/act41.png)
+
+https://linux-hardware.org/?probe=b548b57501
+
+<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/66af5127-d3a0-4a13-82aa-601c685ce38a" />
+
 
 # Punto 5 — ¿Qué diferencia existe entre un módulo y un programa?
 

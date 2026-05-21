@@ -1,1 +1,1 @@
-savedcmd_/home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/mimodulo.mod := printf '%s\n'   mimodulo.o | awk '!x[$$0]++ { print("/home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/"$$0) }' > /home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/mimodulo.mod
+savedcmd_mimodulo.mod := printf '%s\n'   mimodulo.o | awk '!x[$$0]++ { print("./"$$0) }' > mimodulo.mod

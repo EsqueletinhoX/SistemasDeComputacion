@@ -1,1 +1,1 @@
-savedcmd_/home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/modules.order := {   echo /home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/mimodulo.o; :; } > /home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/modules.order
+savedcmd_modules.order := {   echo mimodulo.o; :; } > modules.order

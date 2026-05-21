@@ -1,1 +1,1 @@
-savedcmd_/home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/Module.symvers -T /home/juanma/Documents/Facu26/SdC/SistemasDeComputacion/TP4/part1/module/modules.order -i Module.symvers -e 
+savedcmd_Module.symvers :=  /usr/lib/modules/7.0.3-arch1-2/build/scripts/mod/modpost -M    -a    -N  -o Module.symvers -n -T modules.order -i /usr/lib/modules/7.0.3-arch1-2/build/Module.symvers -e 

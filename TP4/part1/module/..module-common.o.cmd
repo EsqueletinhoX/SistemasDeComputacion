@@ -1,9 +1,10 @@
-savedcmd_mimodulo.mod.o := gcc -Wp,-MMD,./.mimodulo.mod.o.d -nostdinc -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/generated -I/usr/lib/modules/7.0.3-arch1-2/build/include -I/usr/lib/modules/7.0.3-arch1-2/build/include -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/uapi -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/generated/uapi -I/usr/lib/modules/7.0.3-arch1-2/build/include/uapi -I/usr/lib/modules/7.0.3-arch1-2/build/include/generated/uapi -include /usr/lib/modules/7.0.3-arch1-2/build/include/linux/compiler-version.h -include /usr/lib/modules/7.0.3-arch1-2/build/include/linux/kconfig.h -include /usr/lib/modules/7.0.3-arch1-2/build/include/linux/compiler_types.h -D__KERNEL__ -std=gnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-strict-aliasing -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -mno-sse4a -fcf-protection=branch -fno-jump-tables -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -march=x86-64 -mtune=generic -mno-red-zone -mcmodel=kernel -mstack-protector-guard-reg=gs -mstack-protector-guard-symbol=__ref_stack_chk_guard -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -mindirect-branch-cs-prefix -mfunction-return=thunk-extern -fno-jump-tables -mharden-sls=all -fpatchable-function-entry=16,16 -fno-delete-null-pointer-checks -O2 -fno-allow-store-data-races -fstack-protector-strong -ftrivial-auto-var-init=zero -fzero-init-padding-bits=all -fno-stack-clash-protection -fdiagnostics-show-context=2 -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -fmin-function-alignment=16 -fstrict-flex-arrays=3 -fms-extensions -fno-strict-overflow -fno-stack-check -fconserve-stack -fno-builtin-wcslen -Wall -Wextra -Wundef -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Werror=strict-prototypes -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wmissing-declarations -Wmissing-prototypes -Wframe-larger-than=2048 -Wno-main -Wno-type-limits -Wno-dangling-pointer -Wvla-larger-than=1 -Wno-pointer-sign -Wcast-function-type -Wno-unterminated-string-initialization -Wno-array-bounds -Wno-stringop-overflow -Wno-alloc-size-larger-than -Wimplicit-fallthrough=5 -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wenum-conversion -Wunused -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-packed-not-aligned -Wno-format-overflow -Wno-format-truncation -Wno-stringop-truncation -Wno-override-init -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-maybe-uninitialized -Wno-sign-compare -Wno-unused-parameter -g -gdwarf-5  -DMODULE  -DKBUILD_BASENAME='"mimodulo.mod"' -DKBUILD_MODNAME='"mimodulo"' -D__KBUILD_MODNAME=mimodulo -c -o mimodulo.mod.o mimodulo.mod.c   ; /usr/lib/modules/7.0.3-arch1-2/build/tools/objtool/objtool --hacks=jump_label --hacks=noinstr --hacks=skylake --ibt --orc --retpoline --rethunk --sls --static-call --uaccess --prefix=16  --link  --module mimodulo.mod.o
+savedcmd_.module-common.o := gcc -Wp,-MMD,./..module-common.o.d -nostdinc -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/generated -I/usr/lib/modules/7.0.3-arch1-2/build/include -I/usr/lib/modules/7.0.3-arch1-2/build/include -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/uapi -I/usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/generated/uapi -I/usr/lib/modules/7.0.3-arch1-2/build/include/uapi -I/usr/lib/modules/7.0.3-arch1-2/build/include/generated/uapi -include /usr/lib/modules/7.0.3-arch1-2/build/include/linux/compiler-version.h -include /usr/lib/modules/7.0.3-arch1-2/build/include/linux/kconfig.h -include /usr/lib/modules/7.0.3-arch1-2/build/include/linux/compiler_types.h -D__KERNEL__ -std=gnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-strict-aliasing -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -mno-sse4a -fcf-protection=branch -fno-jump-tables -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -march=x86-64 -mtune=generic -mno-red-zone -mcmodel=kernel -mstack-protector-guard-reg=gs -mstack-protector-guard-symbol=__ref_stack_chk_guard -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -mindirect-branch-cs-prefix -mfunction-return=thunk-extern -fno-jump-tables -mharden-sls=all -fpatchable-function-entry=16,16 -fno-delete-null-pointer-checks -O2 -fno-allow-store-data-races -fstack-protector-strong -ftrivial-auto-var-init=zero -fzero-init-padding-bits=all -fno-stack-clash-protection -fdiagnostics-show-context=2 -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -fmin-function-alignment=16 -fstrict-flex-arrays=3 -fms-extensions -fno-strict-overflow -fno-stack-check -fconserve-stack -fno-builtin-wcslen -Wall -Wextra -Wundef -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Werror=strict-prototypes -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wmissing-declarations -Wmissing-prototypes -Wframe-larger-than=2048 -Wno-main -Wno-type-limits -Wno-dangling-pointer -Wvla-larger-than=1 -Wno-pointer-sign -Wcast-function-type -Wno-unterminated-string-initialization -Wno-array-bounds -Wno-stringop-overflow -Wno-alloc-size-larger-than -Wimplicit-fallthrough=5 -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wenum-conversion -Wunused -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-packed-not-aligned -Wno-format-overflow -Wno-format-truncation -Wno-stringop-truncation -Wno-override-init -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-maybe-uninitialized -Wno-sign-compare -Wno-unused-parameter -g -gdwarf-5  -DMODULE  -DKBUILD_BASENAME='".module_common"' -DKBUILD_MODNAME='".module_common.o"' -D__KBUILD_MODNAME=.module_common.o -c -o .module-common.o /usr/lib/modules/7.0.3-arch1-2/build/scripts/module-common.c   ; /usr/lib/modules/7.0.3-arch1-2/build/tools/objtool/objtool --hacks=jump_label --hacks=noinstr --hacks=skylake --ibt --orc --retpoline --rethunk --sls --static-call --uaccess --prefix=16  --link  --module .module-common.o
 
-source_mimodulo.mod.o := mimodulo.mod.c
+source_.module-common.o := /usr/lib/modules/7.0.3-arch1-2/build/scripts/module-common.c
 
-deps_mimodulo.mod.o := \
-    $(wildcard include/config/MODULE_UNLOAD) \
+deps_.module-common.o := \
+    $(wildcard include/config/UNWINDER_ORC) \
+    $(wildcard include/config/MITIGATION_RETPOLINE) \
   /usr/lib/modules/7.0.3-arch1-2/build/include/linux/compiler-version.h \
     $(wildcard include/config/CC_VERSION_TEXT) \
   /usr/lib/modules/7.0.3-arch1-2/build/include/linux/kconfig.h \
@@ -62,10 +63,10 @@ deps_mimodulo.mod.o := \
     $(wildcard include/config/HAVE_STATIC_CALL_INLINE) \
     $(wildcard include/config/KUNIT) \
     $(wildcard include/config/PRINTK_INDEX) \
+    $(wildcard include/config/MODULE_UNLOAD) \
     $(wildcard include/config/CONSTRUCTORS) \
     $(wildcard include/config/FUNCTION_ERROR_INJECTION) \
     $(wildcard include/config/DYNAMIC_DEBUG_CORE) \
-    $(wildcard include/config/MITIGATION_RETPOLINE) \
   /usr/lib/modules/7.0.3-arch1-2/build/include/linux/list.h \
     $(wildcard include/config/LIST_HARDENED) \
     $(wildcard include/config/DEBUG_LIST) \
@@ -1090,14 +1091,45 @@ deps_mimodulo.mod.o := \
   /usr/lib/modules/7.0.3-arch1-2/build/include/linux/error-injection.h \
   /usr/lib/modules/7.0.3-arch1-2/build/include/asm-generic/error-injection.h \
   /usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/asm/module.h \
-    $(wildcard include/config/UNWINDER_ORC) \
   /usr/lib/modules/7.0.3-arch1-2/build/include/asm-generic/module.h \
     $(wildcard include/config/HAVE_MOD_ARCH_SPECIFIC) \
-  /usr/lib/modules/7.0.3-arch1-2/build/include/linux/export-internal.h \
-    $(wildcard include/config/PARISC) \
+  /usr/lib/modules/7.0.3-arch1-2/build/include/linux/build-salt.h \
+    $(wildcard include/config/BUILD_SALT) \
+  /usr/lib/modules/7.0.3-arch1-2/build/include/linux/elfnote.h \
+  /usr/lib/modules/7.0.3-arch1-2/build/include/linux/elfnote-lto.h \
+    $(wildcard include/config/LTO) \
+  /usr/lib/modules/7.0.3-arch1-2/build/include/linux/vermagic.h \
+    $(wildcard include/config/PREEMPT_BUILD) \
+  /usr/lib/modules/7.0.3-arch1-2/build/include/generated/utsrelease.h \
+  /usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/asm/vermagic.h \
+    $(wildcard include/config/M486SX) \
+    $(wildcard include/config/M486) \
+    $(wildcard include/config/M586) \
+    $(wildcard include/config/M586TSC) \
+    $(wildcard include/config/M586MMX) \
+    $(wildcard include/config/MATOM) \
+    $(wildcard include/config/M686) \
+    $(wildcard include/config/MPENTIUMII) \
+    $(wildcard include/config/MPENTIUMIII) \
+    $(wildcard include/config/MPENTIUMM) \
+    $(wildcard include/config/MPENTIUM4) \
+    $(wildcard include/config/MK6) \
+    $(wildcard include/config/MK7) \
+    $(wildcard include/config/MELAN) \
+    $(wildcard include/config/MCRUSOE) \
+    $(wildcard include/config/MEFFICEON) \
+    $(wildcard include/config/MWINCHIPC6) \
+    $(wildcard include/config/MWINCHIP3D) \
+    $(wildcard include/config/MCYRIXIII) \
+    $(wildcard include/config/MVIAC3_2) \
+    $(wildcard include/config/MVIAC7) \
+    $(wildcard include/config/MGEODEGX1) \
+    $(wildcard include/config/MGEODE_LX) \
+  /usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/asm/orc_header.h \
+  /usr/lib/modules/7.0.3-arch1-2/build/arch/x86/include/generated/asm/orc_hash.h \
 
-mimodulo.mod.o: $(deps_mimodulo.mod.o)
+.module-common.o: $(deps_.module-common.o)
 
-$(deps_mimodulo.mod.o):
+$(deps_.module-common.o):
 
-mimodulo.mod.o: $(wildcard /usr/lib/modules/7.0.3-arch1-2/build/tools/objtool/objtool)
+.module-common.o: $(wildcard /usr/lib/modules/7.0.3-arch1-2/build/tools/objtool/objtool)
