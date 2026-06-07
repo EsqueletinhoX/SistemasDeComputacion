@@ -1,0 +1,14 @@
+# artefactos de compilacion
+*.o
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+.*.cmd
+Module.symvers
+modules.order
+.tmp_versions/
+
+# pesados / regenerables
+*.tgz
+*.img
