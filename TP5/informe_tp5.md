@@ -63,8 +63,6 @@ Las dos señales, expresadas como valor crudo de un sensor de 12 bits (rango 0 a
 
 Figura 1: diagrama del entorno simulado.
 
-![Entorno QEMU](img/diagrama_entorno.png)
-
 ---
 
 ## 4. Diseño e implementación del CDD
